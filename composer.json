@@ -1,0 +1,22 @@
+{
+	"name" : "polynamaude/php-security",
+	"description" : "Security related modules for website protection",
+	"type" : "library",
+	"license" : "GPL",
+	"authors" : [{
+			"name" : "Polyna-Maude R.-Summerside",
+			"email" : "devel@polynamaude.com"
+		}
+	],
+	"require" : {
+		"guzzlehttp/guzzle" : ">=6.2.3@stable"
+	},
+		"autoload" : {
+		"psr-4" : {
+			"PhpSecurity\\" : "src"
+		}
+	},
+	"config" : {
+		"optimize-autoloader": true
+	}
+}
