@@ -23,7 +23,7 @@ while ($blackip = fgets($infile))
 
 $infile = $webClient->get('http://www.badips.com/get/list/ssh/2')->getBody()->detach();
 
-while ($blackip = fgets ($infile2))
+while ($blackip = fgets ($infile))
 {
 	$blackedip = rtrim($blackip);
 	fwrite ($outfile, $frewrite.$blackedip."\n");
