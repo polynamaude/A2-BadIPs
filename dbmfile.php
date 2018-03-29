@@ -10,11 +10,11 @@ $bankey = 'BIP';
  * Name of lockfile
  * @var string $lockfile
  */
-$lockfile = 'iplistdbm.lock';
+$lockfile = 'iplist.dbm.lock';
 
 require_once 'vendor/autoload.php';
 
-if (file_exists(__DIR__.'/'.$lockfile) || file_exists(__DIR__.'/iplistdbm.lck'))
+if (file_exists(__DIR__.'/'.$lockfile) || file_exists(__DIR__.'/iplist.dbm.tmp.lck'))
 {
 	echo 'Lockfile exist, please remove and make sure no other instance are running before trying again'."\n";
 	echo 'Lockfile name '.__DIR__.'/'.$lockfile."\n";
@@ -36,13 +36,13 @@ catch (Exception $e)
 $webClient = new \GuzzleHttp\Client();
 
 try {
-	if (file_exists(__DIR__.'/iplistdbm.tmp'))
+	if (file_exists(__DIR__.'/iplist.dbm.tmp'))
 	{
-		unlink(__DIR__.'/iplistdbm.tmp');
+		unlink(__DIR__.'/iplist.dbm.tmp');
 	}
-	echo 'Opening database file for writing temporary ip list'."\n".__DIR__.'/iplistdbm.tmp'."\n";
-	$db = dba_popen(__DIR__.'/iplistdbm.tmp','cl','db4');
-	if ($db != FALSE)
+	echo 'Opening database file for writing temporary ip list'."\n".__DIR__.'/iplist.dbm.tmp'."\n";
+	$db = dba_popen(__DIR__.'/iplist.dbm.tmp','cl','db4');
+	if ($db !== FALSE)
 	{
 		try {
 			echo 'Connecting to https://www.blocklist.de/ for blacklisted ips'."\n";
@@ -50,7 +50,7 @@ try {
 			echo 'Writing ips to file'."\n";
 			while ($blackip = fgets($infile))
 			{
-				dba_insert(rtrim($blackip), $bankey, $db);
+				dba_insert(rtrim($blackip,"\r\n"), $bankey, $db);
 			}
 		}
 		catch (Exception $e)
@@ -64,7 +64,7 @@ try {
 			echo 'Writing ips to file'."\n";
 			while ($blackip = fgets ($infile))
 			{
-				dba_insert(rtrim($blackip), $bankey, $db);
+				dba_insert(rtrim($blackip,"\r\n"), $bankey, $db);
 			}
 		}
 		catch (Exception $e)
@@ -74,7 +74,20 @@ try {
 		}
 		try
 		{
+			dba_sync($db);
 			dba_close($db);
+			if (file_exists(__DIR__.'/iplist.dbm.tmp.lck'))
+			{
+				unlink(__DIR__.'/iplist.dbm.tmp.lck');
+				echo 'Removed database lockfile'."\n";
+			}
+			if (file_exists(__DIR__.'/iplist.dbm'))
+			{
+				echo 'Deleting '.__DIR__.'/iplist.dbm'."\n";
+				unlink(__DIR__.'/iplist.dbm');
+			}
+			echo 'Renaming '.__DIR__.'/iplist.dbm.tmp'.' to'."\n".__DIR__.'/iplist.dbm'."\n";
+			rename(__DIR__.'/iplist.dbm.tmp', __DIR__.'/iplist.dbm');
 			fclose($lockhandle);
 			if (file_exists(__DIR__.'/'.$lockfile))
 			{
@@ -88,7 +101,13 @@ try {
 		{
 			echo 'Error Caught !'."\n";
 			echo $e->getMessage()."\n";
+			dba_close($db);
 			fclose($lockhandle);
+			if (file_exists(__DIR__.'/iplist.dbm.tmp.lck'))
+			{
+				unlink(__DIR__.'/iplist.dbm.tmp.lck');
+				echo 'Removed database lockfile'."\n";
+			}
 			if (file_exists(__DIR__.'/'.$lockfile))
 			{
 				unlink(__DIR__.'/'.$lockfile);
@@ -99,8 +118,14 @@ try {
 	}
 	else {
 		echo 'Can\'t open database file'."\n";
+		dba_sync($db);
 		dba_close($db);
 		fclose($lockhandle);
+		if (file_exists(__DIR__.'/iplist.dbm.tmp.lck'))
+		{
+			unlink(__DIR__.'/iplist.dbm.tmp.lck');
+			echo 'Removed database lockfile'."\n";
+		}
 		if (file_exists(__DIR__.'/'.$lockfile))
 		{
 			unlink(__DIR__.'/'.$lockfile);
@@ -119,9 +144,9 @@ catch (Exception $e)
 		unlink(__DIR__.'/'.$lockfile);
 		echo 'Removing lockfile'."\n";
 	}
-	if (file_exists(__DIR__.'/iplistdbm.lck'))
+	if (file_exists(__DIR__.'/iplist.dbm.tmp.lck'))
 	{
-		unlink(__DIR__.'/iplistdbm.lck');
+		unlink(__DIR__.'/iplist.dbm.tmp.lck');
 		echo 'Removed database lockfile'."\n";
 	}
 	exit(255);
