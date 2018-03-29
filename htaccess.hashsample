@@ -1,0 +1,7 @@
+// Slower than pre-hashed tables using dbm
+// Use ipmap as our hash name
+RewriteMap ipmap "txt:/home/users/iplist.hash"
+// If IP adress lookup return BIP 
+RewriteCond ${ipmap:%{REMOTE_ADDR}} ^BIP$
+// We send a forbidden (403)
+RewriteRule ^.* - [F,L]

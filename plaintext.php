@@ -42,7 +42,7 @@ try {
 		echo 'Writing ips to file'."\n";
 		while ($blackip = fgets($infile))
 		{
-			fwrite ($outfile, rtrim($blackip)."\n");
+			fwrite ($outfile, rtrim($blackip,"\r\n")."\n");
 		}
 	}
 	catch (Exception $e)
@@ -56,7 +56,7 @@ try {
 		echo 'Writing ips to file'."\n";
 		while ($blackip = fgets ($infile))
 		{
-			fwrite ($outfile, rtrim($blackip)."\n");
+			fwrite ($outfile, rtrim($blackip,"\r\n")."\n");
 		}
 	}
 	catch (Exception $e)

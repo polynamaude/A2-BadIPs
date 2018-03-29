@@ -48,14 +48,30 @@ try {
 		{
 			unlink(__DIR__.'/iplist.tmp');
 		}
-		echo 'Opening file '."\n".__DIR__.'/iplist.tmp'.' for writing temporary ip list'."\n";
+		echo 'Opening file '."\n".__DIR__.'/iplist.tmp'."\n".' for writing temporary ip list'."\n";
 		$outfile = fopen('iplist.tmp','w+');
+	}
+
+	catch (Exception $e)
+	{
+		echo 'Error Caught !'."\n";
+		echo $e->getMessage()."\n";
+		fclose($lockhandle);
+		if (file_exists(__DIR__.'/'.$lockfile))
+		{
+			unlink(__DIR__.'/'.$lockfile);
+			echo 'Removing lockfile'."\n";
+		}
+		exit(255);
+	}
+
+	try {
 		echo 'Connecting to https://www.blocklist.de/ for blacklisted ips'."\n";
 		$infile = $webClient->get('https://www.blocklist.de/downloads/export-ips_all.txt')->getBody()->detach();
 		echo 'Writing ips to file'."\n";
 		while ($blackip = fgets($infile))
 		{
-			fwrite ($outfile, $frewrite.rtrim($blackip)."\n");
+			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n")."\n");
 			fwrite ($outfile, $frewrite2."\n");
 		}
 	}
@@ -69,7 +85,7 @@ try {
 		$infile = $webClient->get('http://www.badips.com/get/list/ssh/2')->getBody()->detach();
 		while ($blackip = fgets ($infile))
 		{
-			fwrite ($outfile, $frewrite.$blackip."\n");
+			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n")."\n");
 			fwrite ($outfile, $frewrite2."\n");
 		}
 	}
@@ -107,7 +123,6 @@ try {
 			echo 'Removing lockfile'."\n";
 		}
 		exit(255);
-
 	}
 }
 catch (Exception $e)
