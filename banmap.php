@@ -2,17 +2,23 @@
 
 require_once 'vendor/autoload.php';
 
+/**
+ * Lookup key we'll be using to map in RewriteMap condition for apache rules
+ * @var string $bankey
+ */
+$bankey = 'BIP';
+
 $webClient = new \GuzzleHttp\Client();
 
 try {
-	echo 'Opening file '.__DIR__.'/iplist.txt.tmp'.' for writing temporary ip list'."\n";
-	$outfile = fopen(__DIR__.'/iplist.txt.tmp','w+');
+	echo 'Opening file '.__DIR__.'/iplistbad.tmp'.' for writing temporary ip list'."\n";
+	$outfile = fopen(__DIR__.'/iplistbad.tmp','w+');
 	echo 'Connecting to https://www.blocklist.de/ for blacklisted ips'."\n";
 	$infile = $webClient->get('https://www.blocklist.de/downloads/export-ips_all.txt')->getBody()->detach();
 	echo 'Writing ips to file'."\n";
 	while ($blackip = fgets($infile))
 	{
-		fwrite ($outfile, rtrim($blackip)."\n");
+		fwrite ($outfile, rtrim($blackip)."\t".$bankey."\n");
 	}
 }
 catch (Exception $e)
@@ -26,7 +32,7 @@ try {
 	echo 'Writing ips to file'."\n";
 	while ($blackip = fgets ($infile))
 	{
-		fwrite ($outfile, rtrim($blackip)."\n");
+		fwrite ($outfile, rtrim($blackip)."\t".$bankey."\n");
 	}
 }
 catch (Exception $e)
@@ -37,13 +43,14 @@ catch (Exception $e)
 try {
 	fclose ($outfile);
 	echo 'File closed'."\n";
-	if (file_exists(__DIR__.'/iplist.txt'))
+
+	if (file_exists(__DIR__.'/iplistbad'))
 	{
-		echo 'Deleting '.__DIR__.'/iplist.txt'."\n";
-		unlink(__DIR__.'/iplist.txt');
+		echo 'Deleting '.__DIR__.'/iplistbad'."\n";
+		unlink(__DIR__.'/iplistbad');
 	}
-	echo 'Renaming '.__DIR__.'/iplist.txt.tmp'.' to '.__DIR__.'/iplist.txt'."\n";
-	rename(__DIR__.'/iplist.txt.tmp', __DIR__.'/iplist.txt');
+	echo 'Renaming '.__DIR__.'/iplistbad.tmp'.' to '.__DIR__.'/iplistbad'."\n";
+	rename(__DIR__.'/iplistbad.tmp', __DIR__.'/iplistbad');
 }
 catch (Exception $e)
 {
