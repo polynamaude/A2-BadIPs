@@ -52,6 +52,7 @@ try {
 	}
 	try {
 		echo 'Connecting to https://www.badips.com/ for blacklisted ips'."\n";
+		unset($infile);
 		$infile = $webClient->get('http://www.badips.com/get/list/ssh/2')->getBody()->detach();
 		echo 'Writing ips to file'."\n";
 		while ($blackip = fgets ($infile))
