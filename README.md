@@ -16,4 +16,12 @@ htaccess.php give you a standard htaccess file including two line for each IPs (
 plainhash.php give you a standard tab based list with a BIP tag (BadIP) for each IP so you can use with RewriteMap using text file
 plaintext.php give you a text file with one line per IP.
 
+File produced :
+
+iplist.dbm -> produced by dbmfiles.php
+iplist -> produced by htaccess.php
+iplist.hash -> produced by plainhash.php
+iplist.txt -> produced by plaintext.php
+
+
 Require GuzzleHTTP
