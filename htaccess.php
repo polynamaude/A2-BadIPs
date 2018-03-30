@@ -8,10 +8,17 @@
 $frewrite = "RewriteCond %{REMOTE_ADDR} ";
 
 /**
- * Second string written in rule
+ * Second string written in rule written after IP adress
  * @var string $frewrite2
  */
-$frewrite2 = "RewriteRule ^.* - [F,L]";
+$frewrite2 = " [NC]";
+
+/**
+ * Last line written, howto treat IPs flagged
+ * @var string $frewritelast
+ */
+
+$frewritelast = "RewriteRule ^.* - [F,L]";
 
 /**
  * Name of lockfile
@@ -71,8 +78,7 @@ try {
 		echo 'Writing ips to file'."\n";
 		while ($blackip = fgets($infile))
 		{
-			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n")."\n");
-			fwrite ($outfile, $frewrite2."\n");
+			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n").$frewrite2."\n");
 		}
 	}
 	catch (Exception $e)
@@ -86,8 +92,7 @@ try {
 		$infile = $webClient->get('http://www.badips.com/get/list/ssh/2')->getBody()->detach();
 		while ($blackip = fgets ($infile))
 		{
-			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n")."\n");
-			fwrite ($outfile, $frewrite2."\n");
+			fwrite ($outfile, $frewrite.rtrim($blackip,"\r\n").$frewrite2."\n");
 		}
 	}
 	catch (Exception $e)
@@ -96,6 +101,7 @@ try {
 		echo $e->getMessage()."\n";
 	}
 	try {
+		fwrite($outfile, $frewritelast."\n");
 		fclose($outfile);
 		echo 'File closed'."\n";
 		if (file_exists(__DIR__.'/iplist'))
